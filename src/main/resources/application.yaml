@@ -1,0 +1,5 @@
+spring:
+  ai:
+    openai:
+      api-key: NONE
+      base-url: dev-openai-proxy.gabia.app
