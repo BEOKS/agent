@@ -3,3 +3,13 @@ spring:
     openai:
       api-key: NONE
       base-url: dev-openai-proxy.gabia.app
+agent:
+  context:
+    mattermost:
+      host: https://mattermost.gabia.com
+#      login-id: login
+#      password: password
+#      secret-key: secret
+      login-id: ${MATTERMOST_LOGIN_ID}
+      password: ${MATTERMOST_PASSWORD}
+      secret-key: ${MATTERMOST_SECRET_KEY}
