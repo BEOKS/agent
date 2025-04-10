@@ -4,6 +4,7 @@ import com.zayden.agent.logger
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
@@ -24,18 +25,40 @@ class MattermostConfiguration {
     }
 
     @Bean
-    fun mattermostWebClient(): WebClient {
-        val httpClient = HttpClient.create()
+    fun httpClient(): HttpClient {
+        return HttpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
             .responseTimeout(Duration.ofMillis(5000))
             .doOnConnected { conn ->
                 conn.addHandlerLast(ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
                     .addHandlerLast(WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS))
             }
+    }
 
+    @Bean
+    @Qualifier("basicWebClient")
+    fun mattermostWebClient(mattermostProperties: MattermostProperties, httpClient: HttpClient): WebClient {
         return WebClient.builder()
-            .baseUrl(mattermostProperties().host)
+            .baseUrl(mattermostProperties.host)
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .build()
+    }
+
+    @Bean
+    @Qualifier("authWebClient")
+    fun mattermostAuthWebClient(
+        mattermostAuthentication: MattermostAuthentication,
+        mattermostProperties: MattermostProperties,
+        httpClient: HttpClient
+    ): WebClient {
+        return mattermostAuthentication.authenticate()
+            .map { token ->
+                WebClient.builder()
+                    .baseUrl(mattermostProperties.host)
+                    .clientConnector(ReactorClientHttpConnector(httpClient))
+                    .defaultHeaders { headers ->
+                        headers.set("Authorization", "Bearer $token")
+                    }.build()
+            }.block() ?: throw IllegalStateException("Failed to authenticate with Mattermost")
     }
 }

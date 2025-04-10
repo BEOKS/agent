@@ -1,6 +1,7 @@
 package com.zayden.agent.context.mattermost
 
 import com.zayden.agent.util.TotpGenerator
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -14,7 +15,7 @@ private const val LOGIN_PATH = "/api/v4/users/login"
 class MattermostAuthenticationImpl(
     private val mattermostProperties: MattermostProperties,
     private val totpGenerator: TotpGenerator,
-    private val mattermostWebClient: WebClient
+    @Qualifier("basicWebClient") private val mattermostWebClient: WebClient
 ) : MattermostAuthentication {
     override fun authenticate(loginCredentials: LoginCredentials): Mono<String> {
         return mattermostWebClient
