@@ -6,12 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.time.Duration
 
 @SpringBootTest
-class MattermostEventSourceTest {
+class MattermostEventPublisherTest {
     @Autowired
-    private lateinit var mattermostEventSource: MattermostEventSource
+    private lateinit var mattermostEventPublisher: MattermostEventPublisher
 
     @Test
     fun test() {
-        mattermostEventSource.connect().block(Duration.ofMinutes(10))
+        mattermostEventPublisher.connect().block(Duration.ofMinutes(10))
     }
 }
