@@ -1,7 +1,6 @@
 package com.zayden.agent.context.mattermost
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValues
 import com.zayden.agent.logger
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
@@ -20,7 +19,7 @@ class MattermostEventPublisher(
     private val mattermostAuthentication: MattermostAuthentication,
     private val mattermostProperties: MattermostProperties,
     private val subscriber: MutableList<Subscriber<in MattermostEvent>>
-): Publisher<MattermostEvent> {
+) : Publisher<MattermostEvent> {
     val log = logger()
     val objectMapper = jacksonObjectMapper()
 
@@ -39,13 +38,15 @@ class MattermostEventPublisher(
                     URI.create(wsUrl),
                     headers
                 ) { session ->
-                    val authMessage = "{ \"seq\": 1, \"action\": \"authentication_challenge\", \"data\": { \"token\": \"$token\" } }"
+                    val authMessage =
+                        "{ \"seq\": 1, \"action\": \"authentication_challenge\", \"data\": { \"token\": \"$token\" } }"
                     session.send(Mono.just(session.textMessage(authMessage)))
                         .thenMany(
                             session.receive()
                                 .map(WebSocketMessage::getPayloadAsText)
                                 .map { message: String ->
-                                    subscriber.forEach { it.onNext(convertToMattermostEvent(message)) } })
+                                    subscriber.forEach { it.onNext(convertToMattermostEvent(message)) }
+                                })
                         .then()
                 }
             }
